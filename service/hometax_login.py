@@ -103,19 +103,20 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     print("팝업 확인 버튼 찾음. 클릭 중...")
     await popup_confirm_button.click()
     print("팝업 확인 버튼 클릭 완료!")
+
     # 팝업 확인 후 페이지가 로드될 때까지 대기
-    await page.wait_for_load_state("networkidle", timeout=5000)
+    # await page.wait_for_load_state("networkidle", timeout=5000)
     
-    id_input_box = page.locator("mf_txppWframe_input1")
-    await id_input_box.wait_for(state="visible", timeout=10000)
+    id_input_box = page.locator("#mf_txppWframe_input1")
+    await id_input_box.wait_for(state="attached", timeout=3000)
     await id_input_box.fill(TAX_AGENT_ID)
 
-    pw_input_box = page.locator("mf_txppWframe_input2")
-    await pw_input_box.wait_for(state="visible", timeout=10000)
+    pw_input_box = page.locator("#mf_txppWframe_input2")
+    await pw_input_box.wait_for(state="attached", timeout=3000)
     await pw_input_box.fill(TAX_AGENT_PW)
 
-    login_button = page.locator("mf_txppWframe_trigger41")
-    await login_button.wait_for(state="visible", timeout=10000)
+    login_button = page.locator("#mf_txppWframe_trigger41")
+    await login_button.wait_for(state="attached", timeout=3000)
     await login_button.click()
  
     return p, browser, page
