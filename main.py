@@ -5,11 +5,11 @@ import uvicorn
 
 app = FastAPI()
 
-@app.get("/check")
-async def hello():
-    return "server running"
+@app.get("/health")
+async def ping():
+    return {"status": "ok"}
 
-@app.post("/register")
+@app.post("/taxpayer")
 async def register_taxpayer(taxpayer: TaxPayer) :
     print(taxpayer.model_dump())
     await run_workflow(taxpayer)

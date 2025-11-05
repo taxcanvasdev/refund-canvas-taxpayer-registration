@@ -39,7 +39,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     # 로그인 버튼 클릭
     print("로그인 버튼 찾는 중...")
     login_button = page.locator("#mf_wfHeader_group1503")
-    await login_button.wait_for(state="visible", timeout=10000)
+    await login_button.wait_for(state="attached", timeout=10000)
     print("로그인 버튼 찾음. 클릭 중...")
     await login_button.click()
     print("로그인 버튼 클릭 완료!")
@@ -49,7 +49,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     # 공인인증서 버튼 클릭
     print("공인인증서 버튼 찾는 중...")
     cert_button = page.locator("#mf_txppWframe_anchor22")
-    await cert_button.wait_for(state="visible", timeout=10000)
+    await cert_button.wait_for(state="attached", timeout=10000)
     print("공인인증서 버튼 찾음. 클릭 중...")
     await cert_button.click()
     print("공인인증서 버튼 클릭 완료!")
@@ -88,7 +88,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     print("확인 버튼(#btn_confirm_iframe) 찾는 중...")
     try:
         confirm_button = iframe_frame.locator("#btn_confirm_iframe")
-        await confirm_button.wait_for(state="visible", timeout=10000)
+        await confirm_button.wait_for(state="attached", timeout=10000)
         print("확인 버튼 찾음. 클릭 중...")
         await confirm_button.click()
         print("확인 버튼 클릭 완료!")
@@ -99,7 +99,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     # 팝업 확인 버튼 클릭 (세무대리인 확인 팝업)
     print("팝업 확인 버튼 찾는 중...")
     popup_confirm_button = page.locator('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]')
-    await popup_confirm_button.wait_for(state="visible", timeout=10000)
+    await popup_confirm_button.wait_for(state="attached", timeout=10000)
     print("팝업 확인 버튼 찾음. 클릭 중...")
     await popup_confirm_button.click()
     print("팝업 확인 버튼 클릭 완료!")
