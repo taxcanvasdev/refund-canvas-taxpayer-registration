@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright, Playwright, Browser, Page
+from playwright.async_api import async_playwright, Playwright, Browser, BrowserContext, Page
 from dotenv import load_dotenv
 import asyncio
 import os
@@ -9,7 +9,7 @@ CERTIFICATE_PW = os.getenv("CERTIFICATE_PW")
 TAX_AGENT_ID = os.getenv("TAX_AGENT_ID")
 TAX_AGENT_PW = os.getenv("TAX_AGENT_PW")
 
-async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
+async def login_hometax_with_certificate() -> tuple[Playwright, Browser, BrowserContext, Page]:
     """
     홈택스 공인인증서 페이지에 접근합니다.
     """
@@ -25,6 +25,10 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     p : Playwright = await async_playwright().start()
     # 하나의 브라우저 인스턴스
     browser : Browser = await p.chromium.launch(headless=False)
+
+    # 브라우저 세션 컨텍스트
+    context = await browser.new_context()
+
     # 단일 탭(세션, 쿠키, DOM 포함)
     page : Page = await browser.new_page()
         
@@ -119,4 +123,4 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Page]:
     await login_button.wait_for(state="attached", timeout=3000)
     await login_button.click()
  
-    return p, browser, page
+    return p, browser, context, page

@@ -53,7 +53,7 @@ class TaxPayer(BaseModel):
     )
     
     # 수임일자
-    contract_date: date = Field(
+    contract_date: str = Field(
         ...,
         description="수임일자 (YYYY-MM-DD 형식)"
     )
