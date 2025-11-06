@@ -52,8 +52,11 @@ class TaxPayer(BaseModel):
         description="이메일주소"
     )
     
-    # 수임일자
-    contract_date: str = Field(
-        ...,
-        description="수임일자 (YYYY-MM-DD 형식)"
-    )
+    # 신고대리 세목 (증여세/양도소득세 중 택1)
+    tax_type: Literal["gift_tax", "capital_gains_tax"]
+
+    # 수임일자(YYYY-MM-DD 형식)
+    contract_date: str
+
+    # 해임일자(YYYY-MM-DD 형식)
+    dismissal_date: str

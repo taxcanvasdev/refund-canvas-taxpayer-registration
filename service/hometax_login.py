@@ -27,7 +27,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     browser : Browser = await p.chromium.launch(headless=False)
 
     # 브라우저 세션 컨텍스트
-    context = await browser.new_context()
+    context : BrowserContext = await browser.new_context()
 
     # 단일 탭(세션, 쿠키, DOM 포함)
     page : Page = await browser.new_page()

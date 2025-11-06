@@ -35,14 +35,14 @@ async def safe_goto(page, context, url):
 async def run_workflow(taxpayer : TaxPayer) :
     
     p, browser, context, page = await login_hometax_with_certificate()
-    
-    # await safe_goto(page, context, "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804010000")
 
-    await context.route("**/websquare/**", lambda route: route.abort())
+    # 팝업 차단 포함 이동
+    await safe_goto(page, context, "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000")
 
-    # 그래도 뜨면 즉시 닫기 (2중 방어)
+    # 혹시 남은 팝업이 있으면 닫기
     page.on("popup", lambda popup: popup.close())
 
+    # ✅ register_taxpayer 내부에서 페이지 안정화까지 기다림
     await register_taxpayer(page, taxpayer)
     
     print("\n브라우저가 열려 있습니다. Ctrl+C를 눌러 종료하세요.")

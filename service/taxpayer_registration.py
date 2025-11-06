@@ -1,94 +1,130 @@
 from playwright.async_api import Page
 from schemas import TaxPayer
 
-async def register_taxpayer(page : Page, taxpayer: TaxPayer) :
+async def register_taxpayer(page: Page, taxpayer: TaxPayer):
     print("register_taxpayer 실행!!!")
 
-    # 페이지 이동
-    await page.goto("https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804010000", wait_until="domcontentloaded")
+    await page.goto("https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000", wait_until="domcontentloaded")
     
     # 페이지 로딩 대기
     print("페이지 로딩 대기 중...")
-    await page.wait_for_load_state("networkidle", timeout=10000)
+    await page.wait_for_load_state("networkidle", timeout=5000)
+
+    print("===== 페이지 정보 =====")
+    print(f"📄 URL: {page.url}")
+    print(f"🏷️ 제목: {await page.title()}")
+    print(f"🧩 프레임 개수: {len(page.frames)}")
 
     client_type = taxpayer.client_type
 
-    # 개인사업자
-    if client_type=="individual_business" :
-        btn1 = page.locator("#mf_txppWframe_taPrxClntClCd_input_0")
-        await btn1.wait_for(state="attached", timeout=10000)
+    # ✅ 사업자 유형 구분 클릭
+    if client_type == "individual_business":
+        btn1 = page.locator("label[for='mf_txppWframe_taPrxClntClCd_input_0']")
+        await btn1.wait_for(state="attached", timeout=3000)
         await btn1.click()
-    # 법인사업자
-    elif client_type=="corporate_business":
-        btn2 = page.locator("#mf_txppWframe_taPrxClntClCd_input_1")
-        await btn2.wait_for(state="attached", timeout=10000)
+    elif client_type == "corporate_business":
+        btn2 = page.locator("label[for='mf_txppWframe_taPrxClntClCd_input_1']")
+        await btn2.wait_for(state="attached", timeout=3000)
         await btn2.click()
-    # 비사업자
-    else:
-        btn3 = page.locator("#mf_txppWframe_taPrxClntClCd_input_2")
-        await btn3.wait_for(state="attached", timeout=10000)
+    else:  # 비사업자
+        btn3 = page.locator("label[for='mf_txppWframe_taPrxClntClCd_input_2']")
+        await btn3.wait_for(state="attached", timeout=3000)
         await btn3.click()
 
-    # 개인사업자 또는 법인사업자라면 사업자번호 채우기
-    if client_type=='individual_business' or client_type=='corporate_business':
+    # ✅ 사업자등록번호 입력
+    if client_type in ("individual_business", "corporate_business"):
         parts = taxpayer.business_registration_number.split("-")
-        
+
         front3 = page.locator("#mf_txppWframe_bsno1")
+        await front3.wait_for(state="attached", timeout=3000)
         await front3.fill(parts[0])
+
         mid2 = page.locator("#mf_txppWframe_bsno2")
+        await mid2.wait_for(state="attached", timeout=3000)
         await mid2.fill(parts[1])
+
         last5 = page.locator("#mf_txppWframe_bsno3")
+        await last5.wait_for(state="attached", timeout=3000)
         await last5.fill(parts[2])
-    # 비사업자라면 성명만 채우기
     else:
         name = page.locator("#mf_txppWframe_fnm")
+        await name.wait_for(state="attached", timeout=3000)
         await name.fill(taxpayer.name)
 
-    # 대표자 주민등록번호 채우기
+    # ✅ 주민등록번호
     resno_input = page.locator("#mf_txppWframe_resno")
+    await resno_input.wait_for(state="attached", timeout=3000)
     await resno_input.fill(taxpayer.resident_registration_number)
 
-    # 전화번호 채우기
-    select_box = page.locator("#mf_txppWframe_mp1")
-    options = await select_box.locator("option").all_text_contents()
-
+    # ✅ 전화번호
     parts = taxpayer.phone_number.split("-")
+    mp_front = page.locator("#mf_txppWframe_telno1")
+    await mp_front.wait_for(state="attached", timeout=3000)
+    await mp_front.fill(parts[0])
+
+    mp_mid = page.locator("#mf_txppWframe_telno2")
+    await mp_mid.wait_for(state="attached", timeout=3000)
+    await mp_mid.fill(parts[1])
+
+    mp_last = page.locator("#mf_txppWframe_telno3")
+    await mp_last.wait_for(state="attached", timeout=3000)
+    await mp_last.fill(parts[2])
+
+    # ✅ 휴대전화번호
+    parts = taxpayer.phone_number.split("-")
+
+    select_box = page.locator("#mf_txppWframe_mp1")
+    await select_box.wait_for(state="attached", timeout=3000)
+    options = await select_box.locator("option").all_text_contents()
 
     phone_prefix = parts[0]
     if phone_prefix in options:
-        await select_box.select_option(phone_prefix)
+        await select_box.select_option(label=phone_prefix)
     else:
-        await select_box.select_option('010')
+        await select_box.select_option("010")
 
-    front3 = page.locator("#mf_txppWframe_telno1")
-    await front3.fill(parts[0])
-    mid2 = page.locator("#mf_txppWframe_telno2")
-    await mid2.fill(parts[1])
-    last5 = page.locator("#mf_txppWframe_telno3")
-    await last5.fill(parts[2])
-    
-    # 휴대전화번호 채우기
-    parts = taxpayer.mobile_number.split("-")
-    front3 = page.locator("#mf_txppWframe_mp1")
-    await front3.fill(parts[0])
-    mid4 = page.locator("#mf_txppWframe_mp2")
-    await mid4.fill(parts[1])
-    last4 = page.locator("#mf_txppWframe_mp3")
-    await last4.fill(parts[2])
+    tel_mid = page.locator("#mf_txppWframe_mp2")
+    await tel_mid.wait_for(state="attached", timeout=3000)
+    await tel_mid.fill(parts[1])
 
-    # 이메일 주소 채우기
-    parts=taxpayer.email.split("@")
-    front = page.locator("#mf_txppWframe_eml")
-    await front.fill(parts[0])
-    back = page.locator("#mf_txppWframe_dman")
-    await back.fill(parts[1])
+    tel_last = page.locator("#mf_txppWframe_mp3")
+    await tel_last.wait_for(state="attached", timeout=3000)
+    await tel_last.fill(parts[2])
 
-    # 수임 일자 채우기
-    date = page.locator("#mf_txppWframe_afaDt_input")
-    await date.fill(taxpayer.contract_date)
+    # ✅ 이메일
+    parts = taxpayer.email.split("@")
+    email_front = page.locator("#mf_txppWframe_eml")
+    await email_front.wait_for(state="attached", timeout=3000)
+    await email_front.fill(parts[0])
 
-    # 정보제공범위 클릭
-    await page.click("#mf_txppWframe_infrOfrRngCd_input_1")
+    email_back = page.locator("#mf_txppWframe_dman")
+    await email_back.wait_for(state="attached", timeout=3000)
+    await email_back.fill(parts[1])
 
+    # ✅ 세목
+    select_box = page.locator("#mf_txppWframe_itrfCd")
+    await select_box.wait_for(state="attached", timeout=3000)
+    options = await select_box.locator("option").all_text_contents()
+
+    tax_type = taxpayer.tax_type
+    if tax_type=="gift_tax" :
+        await select_box.select_option(label="증여세")
+    else :
+        await select_box.select_option(label="양도소득세")
+
+    # ✅ 수임 일자
+    contract_date_input = page.locator("#mf_txppWframe_afaDt_input")
+    await contract_date_input.wait_for(state="attached", timeout=3000)
+    await contract_date_input.fill(taxpayer.contract_date)
+
+    # ✅ 해임 일자
+    dismissal_date_input = page.locator("#mf_txppWframe_dsmsDt_input")
+    await dismissal_date_input.wait_for(state="attached", timeout=3000)
+    await dismissal_date_input.fill(taxpayer.dismissal_date)
+
+    # ✅ 등록 버튼 클릭
     register_btn = page.locator("#mf_txppWframe_trigger85")
+    await register_btn.wait_for(state="attached", timeout=3000)
     await register_btn.click()
+
+    print("✅ 납세자 등록 완료!")
