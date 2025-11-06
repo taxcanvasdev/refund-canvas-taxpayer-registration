@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright, Playwright, Browser, BrowserContext, Page
+from playwright.async_api import Page
 from dotenv import load_dotenv
 import asyncio
 import os
@@ -9,7 +9,7 @@ CERTIFICATE_PW = os.getenv("CERTIFICATE_PW")
 TAX_AGENT_ID = os.getenv("TAX_AGENT_ID")
 TAX_AGENT_PW = os.getenv("TAX_AGENT_PW")
 
-async def login_hometax_with_certificate() -> tuple[Playwright, Browser, BrowserContext, Page]:
+async def login_hometax_with_certificate(page: Page) -> Page:
     """
     홈택스 공인인증서 페이지에 접근합니다.
     """
@@ -20,30 +20,19 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
 
     if not TAX_AGENT_ID or not TAX_AGENT_PW :
         raise Exception("세무대리인 관리번호 및 비밀번호 관련 환경변수가 설정되지 않았습니다. .env 파일을 확인하세요.")
-    
-    # playwright 실행 컨텍스트
-    p : Playwright = await async_playwright().start()
-    # 하나의 브라우저 인스턴스
-    browser : Browser = await p.chromium.launch(headless=True)
 
-    # 브라우저 세션 컨텍스트
-    context : BrowserContext = await browser.new_context()
-
-    # 단일 탭(세션, 쿠키, DOM 포함)
-    page : Page = await browser.new_page()
-        
     # 페이지로 이동
     print("페이지로 이동 중...")
     await page.goto("https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&menuCd=index3", wait_until="domcontentloaded")
         
     # 페이지 로딩 대기
     print("페이지 로딩 대기 중...")
-    await page.wait_for_load_state("networkidle", timeout=10000)
+    await page.wait_for_load_state("networkidle", timeout=5000)
             
     # 로그인 버튼 클릭
     print("로그인 버튼 찾는 중...")
     login_button = page.locator("#mf_wfHeader_group1503")
-    await login_button.wait_for(state="attached", timeout=10000)
+    await login_button.wait_for(state="attached", timeout=3000)
     print("로그인 버튼 찾음. 클릭 중...")
     await login_button.click()
     print("로그인 버튼 클릭 완료!")
@@ -53,11 +42,11 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     # 공인인증서 버튼 클릭
     print("공인인증서 버튼 찾는 중...")
     cert_button = page.locator("#mf_txppWframe_anchor22")
-    await cert_button.wait_for(state="attached", timeout=10000)
+    await cert_button.wait_for(state="attached", timeout=3000)
     print("공인인증서 버튼 찾음. 클릭 중...")
     await cert_button.click()
     print("공인인증서 버튼 클릭 완료!")
-    await page.wait_for_selector("#dscert", timeout=10000)
+    await page.wait_for_selector("#dscert", timeout=3000)
         
     # dscert iframe 찾기 및 접근
     print("공인인증서 iframe(#dscert) 찾는 중...")
@@ -92,7 +81,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     print("확인 버튼(#btn_confirm_iframe) 찾는 중...")
     try:
         confirm_button = iframe_frame.locator("#btn_confirm_iframe")
-        await confirm_button.wait_for(state="attached", timeout=10000)
+        await confirm_button.wait_for(state="attached", timeout=3000)
         print("확인 버튼 찾음. 클릭 중...")
         await confirm_button.click()
         print("확인 버튼 클릭 완료!")
@@ -103,7 +92,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     # 팝업 확인 버튼 클릭 (세무대리인 확인 팝업)
     print("팝업 확인 버튼 찾는 중...")
     popup_confirm_button = page.locator('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]')
-    await popup_confirm_button.wait_for(state="attached", timeout=10000)
+    await popup_confirm_button.wait_for(state="attached", timeout=3000)
     print("팝업 확인 버튼 찾음. 클릭 중...")
     await popup_confirm_button.click()
     print("팝업 확인 버튼 클릭 완료!")
@@ -123,4 +112,4 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     await login_button.wait_for(state="attached", timeout=3000)
     await login_button.click()
  
-    return p, browser, context, page
+    return page
