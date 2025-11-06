@@ -70,6 +70,12 @@ async def login_hometax_with_certificate(page: Page) -> Page:
     print("비밀번호 입력 필드(#input_cert_pw)에 값 설정 중...")
     # name 속성을 사용하여 프레임 접근
     cert_frame = page.frame(name="dscert")
+
+    table_element_locator = iframe_frame.locator("#row0dataTable > td > a > span")
+    html = await table_element_locator.evaluate("(el) => el.innerHTML")
+    print("공동인증서 이름:\n", html)
+    
+
     if cert_frame:
         await cert_frame.evaluate('document.getElementById("input_cert_pw").value = "kalmasi908!+"')
         print("비밀번호 값 설정 완료!")
