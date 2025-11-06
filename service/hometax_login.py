@@ -24,7 +24,7 @@ async def login_hometax_with_certificate() -> tuple[Playwright, Browser, Browser
     # playwright 실행 컨텍스트
     p : Playwright = await async_playwright().start()
     # 하나의 브라우저 인스턴스
-    browser : Browser = await p.chromium.launch(headless=False)
+    browser : Browser = await p.chromium.launch(headless=True)
 
     # 브라우저 세션 컨텍스트
     context : BrowserContext = await browser.new_context()

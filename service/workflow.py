@@ -51,4 +51,6 @@ async def run_workflow(taxpayer : TaxPayer) :
             time.sleep(1)
     except KeyboardInterrupt:
         print("\n종료 중...")
+        await page.close()
+        await context.close()
         await browser.close()
