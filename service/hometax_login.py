@@ -91,20 +91,21 @@ async def login_hometax_with_certificate(page: Page) -> Page:
         
     # 팝업 확인 버튼 클릭 (세무대리인 확인 팝업)
     print("팝업 확인 버튼 찾는 중...")
-    await page.evaluate("""
-        () => {
-            const btn = document.querySelector('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]');
-            if (btn) btn.click();
-        }
-    """)
+    # await page.evaluate("""
+    #     () => {
+    #         const btn = document.querySelector('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]');
+    #         if (btn) btn.click();
+    #     }
+    # """)
     # popup_confirm_button = page.locator('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]')
-    # await popup_confirm_button.wait_for(state="attached", timeout=3000)
-    # print("팝업 확인 버튼 찾음. 클릭 중...")
-    # await popup_confirm_button.click()
+    popup_confirm_button = page.locator(".w2trigger.btn_cm.crud")
+    await popup_confirm_button.wait_for(state="attached", timeout=3000)
+    print("팝업 확인 버튼 찾음. 클릭 중...")
+    await popup_confirm_button.click()
     print("팝업 확인 버튼 클릭 완료!")
-    
+
     # 팝업 확인 후 페이지가 로드될 때까지 대기
-    await page.wait_for_load_state("networkidle", timeout=3000)
+    await page.wait_for_selector("#mf_txppWframe_input1", timeout= 5000)
     
     id_input_box = page.locator("#mf_txppWframe_input1")
     await id_input_box.wait_for(state="attached", timeout=3000)
