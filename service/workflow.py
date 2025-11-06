@@ -10,8 +10,8 @@ async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page]:
     playwright : Playwright = await async_playwright().start()
     # 하나의 브라우저 인스턴스
     browser : Browser = await playwright.chromium.launch(headless=True)
-    # 브라우저 세션 컨텍스트
-    context : BrowserContext = await browser.new_context()
+    # 브라우저 세션 컨텍스트 (다운로드 허용)
+    context : BrowserContext = await browser.new_context(accept_downloads=True,  downloads_path="/home/taxcanvasdev")
     # 단일 탭(세션, 쿠키, DOM 포함)
     page : Page = await browser.new_page()
 
