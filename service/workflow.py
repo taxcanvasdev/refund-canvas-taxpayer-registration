@@ -11,7 +11,7 @@ async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page, l
     # Chrome 브라우저 인스턴스 실행 (시스템 Chrome 사용)
     browser: Browser = await playwright.chromium.launch(
         channel="chrome",  # 시스템에 설치된 Chrome 사용
-        headless=False,
+        headless=True,
         args=[
             '--disable-features=PrivacySandboxSettings4',  # 권한 프롬프트 비활성화
             '--disable-blink-features=AutomationControlled',  # 자동화 감지 방지
