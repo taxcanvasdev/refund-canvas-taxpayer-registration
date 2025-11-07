@@ -4,16 +4,45 @@ from service.taxpayer_registration import register_taxpayer
 from utils.close_popup import close_popup
 from schemas import TaxPayer
 import time
+import asyncio
 
 async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page]:
-    # playwright 실행 컨텍스트
-    playwright : Playwright = await async_playwright().start()
-    # 하나의 브라우저 인스턴스
-    browser : Browser = await playwright.chromium.launch(headless=True)
+    # Playwright 실행 컨텍스트
+    playwright: Playwright = await async_playwright().start()
+    # Chrome 브라우저 인스턴스 실행 (시스템 Chrome 사용)
+    browser: Browser = await playwright.chromium.launch(
+        channel="chrome",  # 시스템에 설치된 Chrome 사용
+        headless=False,
+        args=[
+            '--disable-features=PrivacySandboxSettings4',  # 권한 프롬프트 비활성화
+            '--disable-blink-features=AutomationControlled',  # 자동화 감지 방지
+            '--use-fake-ui-for-media-stream',  # 미디어 스트림 UI 자동 허용
+            '--disable-web-security',  # 웹 보안 비활성화 (로컬 네트워크 접근)
+            '--allow-running-insecure-content',  # 안전하지 않은 콘텐츠 허용
+            '--disable-features=IsolateOrigins,site-per-process',  # 오리진 격리 비활성화
+            '--disable-site-isolation-trials',  # 사이트 격리 시험 비활성화
+            '--unsafely-treat-insecure-origin-as-secure=https://hometax.go.kr',  # 홈택스를 안전한 오리진으로 처리
+        ]
+    )
     # 브라우저 세션 컨텍스트
-    context : BrowserContext = await browser.new_context()
-    # 단일 탭(세션, 쿠키, DOM 포함)
-    page : Page = await browser.new_page()
+    context: BrowserContext = await browser.new_context(
+        permissions=['notifications', 'geolocation', 'camera', 'microphone'],  # 권한 자동 허용
+        bypass_csp=True,  # Content Security Policy 우회
+    )
+    # 로컬 네트워크 권한 부여
+    await context.grant_permissions(['notifications', 'geolocation'])
+    
+    # 단일 탭 (세션, 쿠키, DOM 포함)
+    page: Page = await context.new_page()
+    
+    # 권한 요청 다이얼로그 자동 허용 처리
+    async def handle_permission_dialog(dialog):
+        print(f"🔔 권한 요청 감지: {dialog.message}")
+        await dialog.accept()
+        print("✅ 권한 자동 허용됨")
+    
+    # 다이얼로그 이벤트 리스너 등록
+    page.on("dialog", lambda dialog: asyncio.create_task(handle_permission_dialog(dialog)))
 
     return playwright, browser, context, page
 
@@ -33,9 +62,9 @@ async def run_workflow(taxpayer : TaxPayer) :
     page = await login_hometax_with_certificate(page)
 
     # 팝업 차단 포함 이동
-    await close_popup(page, context, "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000")
+    #await close_popup(page, context, "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000")
     # 혹시 남은 팝업이 있으면 닫기
-    page.on("popup", lambda popup: popup.close())
+    #page.on("popup", lambda popup: popup.close())
 
     await register_taxpayer(page, taxpayer)
     

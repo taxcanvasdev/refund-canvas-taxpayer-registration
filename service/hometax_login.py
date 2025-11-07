@@ -105,7 +105,7 @@ async def login_hometax_with_certificate(page: Page) -> Page:
     # """)
     # popup_confirm_button = page.locator('input[id^="mf_txppWframe_confirm"][id$="_wframe_btn_confirm"]')
     popup_confirm_button = page.locator(".w2trigger.btn_cm.crud")
-    await popup_confirm_button.wait_for(state="attached", timeout=3000)
+    await popup_confirm_button.wait_for(state="attached", timeout=6000)
     print("팝업 확인 버튼 찾음. 클릭 중...")
     await popup_confirm_button.click()
     print("팝업 확인 버튼 클릭 완료!")
