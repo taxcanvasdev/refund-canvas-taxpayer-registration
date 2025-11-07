@@ -1,12 +1,11 @@
 from playwright.async_api import async_playwright, Playwright, Browser, BrowserContext, Page
 from service.hometax_login import login_hometax_with_certificate
 from service.taxpayer_registration import register_taxpayer
-from utils.close_popup import close_popup
 from schemas import TaxPayer
 import time
 import asyncio
 
-async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page]:
+async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page, list[str]]:
     # Playwright 실행 컨텍스트
     playwright: Playwright = await async_playwright().start()
     # Chrome 브라우저 인스턴스 실행 (시스템 Chrome 사용)
@@ -35,16 +34,20 @@ async def init_resources() -> tuple[Playwright, Browser, BrowserContext, Page]:
     # 단일 탭 (세션, 쿠키, DOM 포함)
     page: Page = await context.new_page()
     
+    dialog_messages: list[str] = []
+
     # 권한 요청 다이얼로그 자동 허용 처리
     async def handle_permission_dialog(dialog):
-        print(f"🔔 권한 요청 감지: {dialog.message}")
+        print("============== [ DIALOG POPUP ] ==============")
+        print(f"MESSAGE: {dialog.message}")
         await dialog.accept()
-        print("✅ 권한 자동 허용됨")
+        dialog_messages.append(dialog.message) # 다이얼로그 메시지 누적 저장
+        print("자동 수락 버튼 클릭 완료!")
     
     # 다이얼로그 이벤트 리스너 등록
     page.on("dialog", lambda dialog: asyncio.create_task(handle_permission_dialog(dialog)))
 
-    return playwright, browser, context, page
+    return playwright, browser, context, page, dialog_messages
 
 async def clean_resources(playwright: Playwright, browser: Browser, context: BrowserContext, page: Page):
     try: 
@@ -55,22 +58,19 @@ async def clean_resources(playwright: Playwright, browser: Browser, context: Bro
     except Exception as e:
         print(f"clean resources 중 오류: {e}")
 
-async def run_workflow(taxpayer : TaxPayer) :
+async def run_workflow(taxpayer : TaxPayer) -> str | None :
 
-    playwright, browser, context, page = await init_resources()
+    playwright, browser, context, page, dialog_messages = await init_resources()
     
-    page = await login_hometax_with_certificate(page)
-
-    # 팝업 차단 포함 이동
-    #await close_popup(page, context, "https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000")
-    # 혹시 남은 팝업이 있으면 닫기
-    #page.on("popup", lambda popup: popup.close())
-
+    await login_hometax_with_certificate(page)
     await register_taxpayer(page, taxpayer)
     
-    print("\n브라우저가 열려 있습니다. Ctrl+C를 눌러 종료하세요.")
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        await clean_resources(playwright, browser, context, page)
+    print("============= 누적된 메시지 =============")
+    for m in dialog_messages:
+        print(m)
+        print()
+    print("================ END ================")
+
+    await clean_resources(playwright, browser, context, page)
+
+    return dialog_messages[-1] if dialog_messages else None

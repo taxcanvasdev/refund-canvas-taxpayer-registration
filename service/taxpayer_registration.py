@@ -2,20 +2,8 @@ from playwright.async_api import Page
 from schemas import TaxPayer
 import asyncio
 
-async def handle_dialog(dialog):
-    print(f"📢 다이얼로그 발생 ({dialog.type}): {dialog.message}")
-    await dialog.accept()
-    print("✅ 다이얼로그 수락 완료")
-
-def setup_dialog_handler(page):
-    async def wrapper(dialog):
-        await handle_dialog(dialog)
-    page.on("dialog", lambda dialog: asyncio.create_task(wrapper(dialog)))
-
 async def register_taxpayer(page: Page, taxpayer: TaxPayer):
     print("register_taxpayer 실행!!!")
-
-    setup_dialog_handler(page)
 
     await page.goto("https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=48&tm2lIdx=4804000000&tm3lIdx=4804050000", wait_until="domcontentloaded")
     
@@ -137,5 +125,3 @@ async def register_taxpayer(page: Page, taxpayer: TaxPayer):
 
     # 두번 열린 다이얼로그 창 끌때까지 기다려주기
     await page.wait_for_timeout(2000)
-
-    print("✅ 납세자 등록 완료!")

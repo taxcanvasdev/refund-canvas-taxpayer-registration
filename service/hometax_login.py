@@ -46,7 +46,7 @@ async def login_hometax_with_certificate(page: Page) -> Page:
     print("공인인증서 버튼 찾음. 클릭 중...")
     await cert_button.click()
     print("공인인증서 버튼 클릭 완료!")
-    await page.wait_for_selector("#dscert", timeout=3000)
+    await page.wait_for_selector("#dscert", timeout=5000)
         
     # dscert iframe 찾기 및 접근
     print("공인인증서 iframe(#dscert) 찾는 중...")
